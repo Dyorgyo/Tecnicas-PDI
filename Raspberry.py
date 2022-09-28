@@ -1,5 +1,5 @@
-import sys
-import Adafruit_DHT     # Biblioteca do
+import sys              
+import Adafruit_DHT     # Biblioteca do DHT22
 import mhz_19           # Biblioteca do sensor de CO2
 import csv              # Biblioteca de arquivos csv
 import time             # Biblioteca de tempo
@@ -48,7 +48,6 @@ camera.stop_preview()                                           # Fecha a visual
 cabecalho = ['NumF', 'Temp', 'Umid', 'ECO2', 'TVOC','mhz_co2','peso','Data']  # Simplificando a o arquivo CSV
 NumFoto = 0                                                                   # Zera um auxiliar para nomear/contar as fotos
 
-
 while True:
     NumFoto = NumFoto + 1  # Contador de fotos
     # Coleta dos dados
@@ -76,7 +75,6 @@ while True:
             'peso': '{0:0.2f}'.format(peso_B),                                                              # Peso B
             'Data': '{0}'.format(Data)})                                                                    # Data
     arquivo_csv.close()                                                                                     # Fecha o arquivo csv
-    
     
     hx.power_down()           # Desliga e Liga a Balança
     hx.power_up()
