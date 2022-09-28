@@ -22,7 +22,6 @@ hx = HX711(5, 6)                        # Portas conectas ao raspberry
 hx.set_reading_format("MSB", "MSB")     # Como será feita a leitura
 hx.set_reference_unit(referenceUnit)    # Referencia da tara
 hx.reset()                              # inicia as balanças
-
 hx.tare_A()                             # Tara da balança A
 hx.tare_B()                             # Tara da balança B
 
