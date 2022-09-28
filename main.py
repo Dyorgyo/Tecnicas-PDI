@@ -8,35 +8,33 @@ NumFoto_end = 208   # Foto que vai terminar +1
 for j in range(NumFoto_beg, NumFoto_end):   # Vai rodar para cada imagem
 # Obs. Foto do Raspberry Pi é 1920x1080
 
-    Foto = cv2.imread('TCC/Banana_Teste_1/Foto_{}.bmp'.format(j))   # Repositório q está as fotos
+    Foto = cv2.imread('TCC/Imagens/Foto_{}.bmp'.format(j))   # Repositório q está as fotos
     
     # o Python vê a imagem como 1080x1920
     # Normalização usando o fundo RGB
     Foto_Normalizacao = Foto[0:50, 0:50]  # Recorte do fundo
-    # Cubo SUPERIOR - menor
-    # Foto_Normalizacao_Red = Foto[255:255 + 40, 45:45 + 40]      # Normalização Usando a cor Red
-    # Foto_Normalizacao_Green = Foto[320:320 + 40, 115:115 + 40]  # Normalização Usando a cor Green
-    # Foto_Normalizacao_Blue = Foto[253:253 + 40, 180:180 + 40]   # Normalização Usando a cor Blue
-    # Cubo INFERIOR - maior
-    #Foto_Normalizacao_Red = Foto[469:469 + 50, 173:173 + 50]   # Normalização Usando a cor Red
-    #Foto_Normalizacao_Green = Foto[473:473 + 50, 57:57 + 50]   # Normalização Usando a cor Green
-    #Foto_Normalizacao_Blue = Foto[571:571 + 50, 175:175 + 50]  # Normalização Usando a cor Blue
+    # Cubo Mágico
+    Foto_Normalizacao_Red = Foto[255:255 + 50, 45:45 + 50]      # Normalização Usando a cor Red
+    Foto_Normalizacao_Green = Foto[320:320 + 50, 115:115 + 50]  # Normalização Usando a cor Green
+    Foto_Normalizacao_Blue = Foto[253:253 + 50, 180:180 + 50]   # Normalização Usando a cor Blue
+
     # Fundo Gray
     Foto_gray_Normalizacao = cv2.cvtColor(Foto_Normalizacao, cv2.COLOR_BGR2GRAY)  # Utiliza o recorte do fundo e deixa-o em Gray Scale
 
-    #brn, grn, rrn = cv2.split(Foto_Normalizacao_Red)  # todos os pixels no formato B G R Normalizacao Red
-    #bgn, ggn, rgn = cv2.split(Foto_Normalizacao_Green)  # todos os pixels no formato B G R Normalizacao Gren
-    #bbn, gbn, rbn = cv2.split(Foto_Normalizacao_Blue)  # todos os pixels no formato B G R Normalizacao Blue
-    bn, gn, rn = cv2.split(Foto_Normalizacao)  # Todos os pixels no formato B G R  - Normalização RGB
-    grayn = cv2.split(Foto_gray_Normalizacao)  # Utilizado para a normalização Gray
+    brn, grn, rrn = cv2.split(Foto_Normalizacao_Red)    # todos os pixels no formato B G R Normalizacao Red
+    bgn, ggn, rgn = cv2.split(Foto_Normalizacao_Green)  # todos os pixels no formato B G R Normalizacao Gren
+    bbn, gbn, rbn = cv2.split(Foto_Normalizacao_Blue)   # todos os pixels no formato B G R Normalizacao Blue
+    bn, gn, rn = cv2.split(Foto_Normalizacao)           # Todos os pixels no formato B G R  - Normalização RGB
+    grayn = cv2.split(Foto_gray_Normalizacao)           # Utilizado para a normalização Gray
 
-    ttl = Foto_Normalizacao.size / 3  # Pegar o Número de pixels
-    #ttl40 = Foto_Normalizacao_Red.size / 3  # Pegar o Número de pixels
+    ttl = Foto_Normalizacao.size / 3    # Número de pixels na região de interesse
 
-    GRAYN = float(np.sum(grayn)) / ttl  # Normalização com o fundo
+    # Média das componentes das Regiões de Normalização
+    GRAYN = float(np.sum(grayn)) / ttl  # Região do fundo em escala Gray
     GRAY_meanN = list()
     GRAY_meanN.append(GRAYN)
-    BN = float(np.sum(bn)) / ttl
+
+    BN = float(np.sum(bn)) / ttl        # Região do fundo em Escala RGB
     GN = float(np.sum(gn)) / ttl
     RN = float(np.sum(rn)) / ttl
     B_meanN = list()
@@ -45,37 +43,40 @@ for j in range(NumFoto_beg, NumFoto_end):   # Vai rodar para cada imagem
     B_meanN.append(BN)
     G_meanN.append(GN)
     R_meanN.append(RN)
-    '''
-    BBN = float(np.sum(bbn)) / ttl40  # Normalização com a cor
-    GGN = float(np.sum(ggn)) / ttl40
-    RRN = float(np.sum(rrn)) / ttl40
+    
+    BBN = float(np.sum(bbn)) / ttl      # Região do cubo mágico em Escala RGB
+    GGN = float(np.sum(ggn)) / ttl
+    RRN = float(np.sum(rrn)) / ttl
     BB_meanN = list()
     GG_meanN = list()
     RR_meanN = list()
     BB_meanN.append(BBN)
     GG_meanN.append(GGN)
     RR_meanN.append(RRN)
-    if j == NumFoto_beg:
-        BASE_RED = RRN  # É um valor de 0 a 255
+
+    if j == NumFoto_beg:    # Caso a seja a primeira imagem, vai manter esse como base
+        BASE_RED = RRN      # É um valor de 0 a 255
         BASE_GREEN = GGN
         BASE_BLUE = BBN
         BASE_GRAY = GRAYN
-    '''
-    for i in range(1, 2):
-        '''if i == 0:          # Banana - Filme superior
-            Lar = 220
-            Alt = 290'''
-        if i == 1:        # Banana - Filme inferior
-            Lar = 200
-            Alt = 480
-        '''elif i == 2:        # Banana - Toda em Filme
-            Lar = 1300
+    
+    for i in range(0, 4):   # Cortes das Regiões de Interesse das frutas - Em loop
+        if i == 0:          # Maçã Sem filme
+            Lar = 400
+            Alt = 700
+        if i == 1:          # Banana sem filme
+            Lar = 400
             Alt = 300
-        else:               # Banana - Sem Filme
+        elif i == 2:        # Maçã com Filme
             Lar = 1700
-            Alt = 300'''
+            Alt = 700
+        else:               # Banana com Filme
+            Lar = 1700
+            Alt = 300
 
-        Foto_crop = Foto[Alt:Alt + 50, Lar:Lar + 50]  # o Python vê a imagem como 900x1600
+        # O processo realizado para as Regiões de normalização vai ser repetido para os frutos
+
+        Foto_crop = Foto[Alt:Alt + 50, Lar:Lar + 50]                # Região de Interesse - O corte depende de qual ciclo
         Foto_gray1 = cv2.cvtColor(Foto_crop, cv2.COLOR_BGR2GRAY)
 
         b1, g1, r1 = cv2.split(Foto_crop)   # todos os pixels no formato B G R
@@ -86,14 +87,14 @@ for j in range(NumFoto_beg, NumFoto_end):   # Vai rodar para cada imagem
         G_mean1 = list()
         R_mean1 = list()
         B_mean1.append(B1)                  # Tirando a média
-        G_mean1.append(G1)                  # Tirando a média
-        R_mean1.append(R1)                  # Tirando a média
+        G_mean1.append(G1)                 
+        R_mean1.append(R1)                  
 
-        gray1 = cv2.split(Foto_gray1)       # todos os pixels em Gray Scale
+        gray1 = cv2.split(Foto_gray1)       # todos os pixels em escala Gray
         GRAY1 = float(np.sum(gray1)) / ttl  # Converter para float
         GRAY_mean1 = list()
         GRAY_mean1.append(GRAY1)            # Tirando a média
-        '''
+        ''' O comentário a seguir seria para a estração da escala CYMK
         # Extract channels
         with np.errstate(invalid='ignore', divide='ignore'):
             bgr1 = Foto_crop.astype(float) / 255
@@ -140,44 +141,46 @@ for j in range(NumFoto_beg, NumFoto_end):   # Vai rodar para cada imagem
         Y_meanN.append(YN)
         K_meanN.append(KN)
         '''
-        '''
+        # Verifica a diferença da cor do Cubo da primeira imagem para a atual, retirar possiveis erros de iluminação
         Aux_R = BASE_RED - RRN
         Aux_G = BASE_GREEN - GGN
         Aux_B = BASE_BLUE - BBN
         Aux_Gray = BASE_GRAY - GRAYN
-        '''
-        cabeca_Gray = ['Gray1', 'GrayN1', 'GrayN1+delta']
-        #cabeca_RGB = ['R1', 'G1', 'B1', 'RN1', 'GN1', 'BN1', 'RRN', 'GGN', 'BBN', 'R1+delta', 'B1+delta', 'G1+delta']
-        cabeca_RGB = ['R1', 'G1', 'B1', 'RN1', 'GN1', 'BN1']
-
-        # cabeca_CMYK = ['C1', 'M1', 'Y1', 'K1', 'CN1', 'MN1', 'YN1', 'KN1']
-        with open('Decomp_Gray_{}.csv'.format(i), 'a+') as arquivo_csv:
-            escrever = csv.DictWriter(arquivo_csv, fieldnames=cabeca_Gray, delimiter=';', lineterminator='\n')
-            # Escrever o que já existia ou começar a escrever depois do já existente
-            # escrever.writerow({'Gray': GRAY, 'Red': R, 'Green': G, 'Blue': B}) Com todas as casas decimais
-            escrever.writerow({
-                'Gray1': '{0:0.4f}'.format(GRAY1),
-                'GrayN1': '{0:0.4f}'.format(GRAYN)})
-                #'GrayN1+delta': '{0:0.4f}'.format(GRAY1 + Aux_Gray)})
-
-            arquivo_csv.close()
         
-        with open('Decomp_RGB_{}.csv'.format(i), 'a+') as arquivo_csv:
-            escrever = csv.DictWriter(arquivo_csv, fieldnames=cabeca_RGB, delimiter=';', lineterminator='\n')
+        # Cabeçalhos utilizados para salvar os dados em CSV
+        cabeca_Gray = ['Gray1', 'GrayN1', 'GrayN1+delta']
+        cabeca_RGB = ['R1', 'G1', 'B1', 'RN1', 'GN1', 'BN1', 'RRN', 'GGN', 'BBN', 'R1+delta', 'B1+delta', 'G1+delta']
+        # cabeca_CMYK = ['C1', 'M1', 'Y1', 'K1', 'CN1', 'MN1', 'YN1', 'KN1']
+
+        # Abre o arquivo CSV para escrita da escala Gray
+        with open('Decomp_Gray_{}.csv'.format(i), 'a+') as arquivo_csv:
+            escrever = csv.DictWriter(arquivo_csv, fieldnames=cabeca_Gray, delimiter=';', lineterminator='\n')  # Parâmetros de escrita
             escrever.writerow({
-                'R1': '{0:0.4f}'.format(R1),
-                'G1': '{0:0.4f}'.format(G1),
-                'B1': '{0:0.4f}'.format(B1),
-                'RN1': '{0:0.4f}'.format(RN),
-                'GN1': '{0:0.4f}'.format(GN),
-                'BN1': '{0:0.4f}'.format(BN)})
-                #'RRN': '{0:0.4f}'.format(RRN),
-                #'GGN': '{0:0.4f}'.format(GGN),
-                #'BBN': '{0:0.4f}'.format(BBN),
-                #'R1+delta': '{0:0.4f}'.format(R1+Aux_R),
-                #'G1+delta': '{0:0.4f}'.format(G1+Aux_G),
-                #'B1+delta': '{0:0.4f}'.format(B1+Aux_B)})
-        arquivo_csv.close()
+                # Os itens são salvos com até 4 casas décimais
+                'Gray1': '{0:0.4f}'.format(GRAY1),          # Média da RI do fruto
+                'GrayN1': '{0:0.4f}'.format(GRAYN)})        # Média da RI do fundo
+            arquivo_csv.close()                                                                                 # Fecha o arquivo
+        
+        # Abre o arquivo CSV para escrita da escala RGB
+        with open('Decomp_RGB_{}.csv'.format(i), 'a+') as arquivo_csv:
+            escrever = csv.DictWriter(arquivo_csv, fieldnames=cabeca_RGB, delimiter=';', lineterminator='\n')   # Parâmetros de escrita
+            
+            escrever.writerow({
+                 # Os itens são salvos com até 4 casas décimais
+                'R1': '{0:0.4f}'.format(R1),                    # Média da RI do fruto - Red
+                'G1': '{0:0.4f}'.format(G1),                    # Média da RI do fruto - Green
+                'B1': '{0:0.4f}'.format(B1),                    # Média da RI do fruto - Blue
+                'RN1': '{0:0.4f}'.format(RN),                   # Média da RI do fundo - Red
+                'GN1': '{0:0.4f}'.format(GN),                   # Média da RI do fundo - Green
+                'BN1': '{0:0.4f}'.format(BN),                   # Média da RI do fundo - Blue
+                'RRN': '{0:0.4f}'.format(RRN),                  # Média da RI do cubo - Red
+                'GGN': '{0:0.4f}'.format(GGN),                  # Média da RI do cubo - Green
+                'BBN': '{0:0.4f}'.format(BBN),                  # Média da RI do cubo - Blue
+                'R1+delta': '{0:0.4f}'.format(R1+Aux_R),        # Média da RI do fruto + a variação do cubo - Red
+                'G1+delta': '{0:0.4f}'.format(G1+Aux_G),        # Média da RI do fruto + a variação do cubo - Green
+                'B1+delta': '{0:0.4f}'.format(B1+Aux_B)})       # Média da RI do fruto + a variação do cubo - Blue
+
+        arquivo_csv.close()     # Fecha o arquivo
         '''
         with open('Decomp_CMYK_{}.csv'.format(i), 'a+') as arquivo_csv:
             escrever = csv.DictWriter(arquivo_csv, fieldnames=cabeca_CMYK, delimiter=';', lineterminator='\n')
