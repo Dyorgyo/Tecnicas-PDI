@@ -9,10 +9,12 @@ import busio            # Biblioteca de entrada serial
 import locale           # Biblioteca de Data
 import picamera         # Biblioteca exclusiva do Raspberry usada para a Camera
 import RPi.GPIO as GPIO # Biblioteca do Raspberry para GPIos
+import serial           # Porta USB do Raspberry
+import re               # ReGeX str
 
 # Balanças
 EMULATE_HX711=False     # relacionado ao HX711
-referenceUnit = 1
+#referenceUnit = 1
 if not EMULATE_HX711:
     from hx711 import HX711
 else:
@@ -20,14 +22,15 @@ else:
 
 hx = HX711(5, 6)                        # Portas conectas ao raspberry
 hx.set_reading_format("MSB", "MSB")     # Como será feita a leitura
-hx.set_reference_unit(referenceUnit)    # Referencia da tara
+hx.set_reference_unit_A(-463.5)         # Valor para calibração da balança A
+hx.set_reference_unit_B(-125.5)         # Valor para calibração da balança B
 hx.reset()                              # inicia as balanças
 hx.tare_A()                             # Tara da balança A
 hx.tare_B()                             # Tara da balança B
 
 # TEMT 6000
-GPIO.setmode(GPIO.BCM)                  # Seta a entrada Usb para leitura
-GPIO.setup(12, GPIO.IN)                 # 
+#GPIO.setmode(GPIO.BCM)                  # Seta a entrada Usb para leitura
+#GPIO.setup(12, GPIO.IN)                 # 
 
 # DATA
 locale.setlocale(locale.LC_TIME, 'pt_BR.utf8')                  # Modificando o Formato da Data
@@ -44,6 +47,7 @@ camera.start_preview()                                          # abre  uma visu
 time.sleep(30)                                                  # Tempo para visualizar
 camera.stop_preview()                                           # Fecha a visualização
 
+
 cabecalho = ['NumF', 'Temp', 'Umid', 'ECO2', 'TVOC','mhz_co2','peso','Data']  # Simplificando a o arquivo CSV
 NumFoto = 0                                                                   # Zera um auxiliar para nomear/contar as fotos
 
@@ -51,14 +55,21 @@ while True:
     NumFoto = NumFoto + 1  # Contador de fotos
     # Coleta dos dados
     Ultimafoto = camera.capture('Foto_{}.bmp'.format(NumFoto), 'bmp')       # Captura a imagem
+    
     umidade, temperatura = Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, 17)  # Umidade e Temperautra - DHT 22 e GPIO 17 (pino 11)
     Carbonico = ccs811.eco2                                                 # Equivalente CO2
     Organico = ccs811.tvoc                                                  # Total Volatile Organic Composture
-    Data = time.strftime('%c', time.localtime())                            # Data
-    co2mhz = mhz_19.read()                                                  
-    co2mhz = co2mhz['co2']                                                  # CO2 
+    
+    co2mhz = mhz_19.read(serial_console_untouched=True)                     # CO2
+    serial_usb = serial.Serial('/dev/ttyACM0',9600)                         # Abre o serial para leitura USB
+    luz = serial_usb.readline()                                             # Leitura do TEMT6000 pela porta USB - tivaseries
+    Decodificada = luz.decode("ascii")                                      # Decodifica a leitura do TEMT6000 para ascii
+    luz_str = re.sub('[\r \n]','',Decodificada)                             # Passa o valor ascii do TEMT6000 para string 
+    
     peso_A = hx.get_weight_A(5)                                             # Peso Balança A
     peso_B = hx.get_weight_B(5)                                             # Peso Balança B
+   
+    Data = time.strftime('%c', time.localtime())                            # Data
     
     # Abre o arquivo csv para escrita
     with open('Medicao.csv', 'a+') as arquivo_csv:                            
@@ -75,6 +86,8 @@ while True:
             'Data': '{0}'.format(Data)})                                                                    # Data
     arquivo_csv.close()                                                                                     # Fecha o arquivo csv
     
-    hx.power_down()           # Desliga e Liga a Balança
+    hx.power_down()             # Desliga e Liga a Balança
     hx.power_up()
-    time.sleep(1800)          # 30 min Entre Amostras
+    serial_usb.close()          # Fecha o serial da entrada USB
+
+    time.sleep(1800)            # 30 min Entre Amostras
