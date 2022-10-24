@@ -11,7 +11,8 @@ import picamera         # Biblioteca exclusiva do Raspberry usada para a Camera
 import RPi.GPIO as GPIO # Biblioteca do Raspberry para GPIos
 import serial           # Porta USB do Raspberry
 import re               # ReGeX str
-
+ 
+ 
 # Balanças
 EMULATE_HX711=False     # relacionado ao HX711
 #referenceUnit = 1
