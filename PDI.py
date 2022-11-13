@@ -3,7 +3,7 @@ import numpy as np
 import csv
 
 NumFoto_beg = 1     # Foto que vai começar a decomposição
-NumFoto_end = 208   # Foto que vai terminar +1
+NumFoto_end = 762   # Foto que vai terminar +1
 
 for j in range(NumFoto_beg, NumFoto_end):   # Vai rodar para cada imagem
 # Obs. Foto do Raspberry Pi é 1920x1080
@@ -60,23 +60,29 @@ for j in range(NumFoto_beg, NumFoto_end):   # Vai rodar para cada imagem
         BASE_BLUE = BBN
         BASE_GRAY = GRAYN
     
-    for i in range(0, 4):   # Cortes das Regiões de Interesse das frutas - Em loop
+    for i in range(0, 6):   # Cortes das Regiões de Interesse das frutas - Em loop
         if i == 0:          # Maçã Sem filme
             Lar = 400
-            Alt = 700
-        if i == 1:          # Banana sem filme
-            Lar = 400
-            Alt = 300
-        elif i == 2:        # Maçã com Filme
-            Lar = 1700
-            Alt = 700
-        else:               # Banana com Filme
-            Lar = 1700
-            Alt = 300
+            Alt = 110
+        if i == 1:          # Maçã com filme
+            Lar = 1450
+            Alt = 80
+        elif i == 2:        # Banana 1 sem Filme
+            Lar = 200
+            Alt = 530        
+        elif i == 3:        # Banana 2 sem Filme
+            Lar = 200
+            Alt = 820
+        elif i == 4:        # Banana 3 com Filme
+            Lar = 1500
+            Alt = 520
+        else:               # Banana 4 com Filme
+            Lar = 1550
+            Alt = 850
 
         # O processo realizado para as Regiões de normalização vai ser repetido para os frutos
 
-        Foto_crop = Foto[Alt:Alt + 50, Lar:Lar + 50]                # Região de Interesse - O corte depende de qual ciclo
+        Foto_crop = Foto[Alt:Alt + 100, Lar:Lar + 100]                # Região de Interesse - O corte depende de qual ciclo
         Foto_gray1 = cv2.cvtColor(Foto_crop, cv2.COLOR_BGR2GRAY)
 
         b1, g1, r1 = cv2.split(Foto_crop)   # todos os pixels no formato B G R
